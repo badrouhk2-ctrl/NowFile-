@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090909"><meta name="description" content="NowFile — upload, store and share files easily.">
+  <title>NowFile — File Hosting & Sharing</title>
+  <link rel="icon" type="image/png" href="logo.png"><link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><img src="logo.png" alt="NowFile logo"><span>Now<span class="red">File</span></span></a><span class="tag">FILE HOSTING & SHARING</span></header>
+  <main>
+    <section class="hero"><div class="eyebrow"><i></i> SIMPLE. FAST. YOUR FILES.</div><h1>Share files.<br><span class="red">No limits to ideas.</span></h1><p>Upload your files and share them with anyone, anywhere.</p>
+      <div class="upload-card" id="dropArea"><input id="fileInput" type="file" hidden>
+        <div class="upload-icon">↑</div><h2>Drop your files here</h2><p>or choose files from your device</p>
+        <button class="primary" id="chooseBtn">Choose files</button><div class="small-note">Maximum file size: 100 MB per file</div>
+        <div class="file-row" id="fileRow" hidden><div class="file-symbol">▤</div><div class="file-info"><strong id="fileName"></strong><span id="fileSize"></span></div><button class="remove" id="removeBtn" aria-label="Remove file">×</button></div>
+        <div class="progress-wrap" id="progressWrap" hidden><div class="progress"><span id="progressBar"></span></div><small id="statusText">Preparing upload…</small></div>
+        <button class="primary upload-btn" id="uploadBtn" disabled>Upload file <span>↗</span></button>
+        <div class="result" id="result" hidden><strong>✓ Your file is ready!</strong><div class="share-line"><input id="shareUrl" readonly><button id="copyBtn">Copy link</button></div><a id="downloadLink" target="_blank" rel="noopener">Open uploaded file ↗</a></div>
+      </div>
+      <div class="trust"><span>⌁ Easy sharing</span><span>◈ Fast uploads</span><span>⌑ Simple access</span></div>
+    </section>
+    <section class="how"><h2>How <span class="red">NowFile</span> works</h2><div class="steps"><article><b>01</b><h3>Choose a file</h3><p>Select a file from your phone or computer.</p></article><article><b>02</b><h3>Upload it</h3><p>Let NowFile securely store your file.</p></article><article><b>03</b><h3>Share the link</h3><p>Copy your link and send it to anyone.</p></article></div></section>
+  </main>
+  <footer><a class="brand small-brand" href="./"><img src="logo.png" alt=""><span>Now<span class="red">File</span></span></a><span>© <span id="year"></span> NowFile. File hosting made simple.</span></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body></html>

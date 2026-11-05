@@ -1,0 +1,22 @@
+NOWFILE — SETUP GUIDE
+
+This is the first working front-end version of NowFile. The upload and share-link feature uses Supabase Storage. It will not upload files until you connect a Supabase project.
+
+1) Create a Supabase project at https://supabase.com
+2) In Storage, create a bucket named: nowfile
+3) Set the bucket to Public (required for the simple public share links in this starter).
+4) In Project Settings > API, copy the Project URL and anon/public key.
+5) Open app.js and replace:
+   YOUR_SUPABASE_URL with your Project URL
+   YOUR_SUPABASE_ANON_KEY with your anon/public key
+6) In Supabase > Storage > Policies, add an INSERT policy for the storage.objects table for the nowfile bucket. For a quick personal test only, use:
+   CREATE POLICY "Allow public uploads to nowfile" ON storage.objects
+   FOR INSERT TO anon WITH CHECK (bucket_id = 'nowfile');
+   Public downloads are enabled by the public bucket setting.
+7) Upload all files in this folder to a GitHub repository. In Settings > Pages, deploy from the main branch / root.
+
+IMPORTANT SECURITY NOTES
+- This starter is suitable for a prototype/test, not a public production file-hosting service.
+- The public upload policy lets anyone who discovers your site upload files. A client-side 100 MB limit can be bypassed.
+- Before opening this to everyone, add server-side rate limits, abuse reporting/moderation, storage quotas, file type rules, malware scanning, and authentication or a protected upload API.
+- Never put a Supabase service_role key in app.js. Use only the anon/public key in browser code.
