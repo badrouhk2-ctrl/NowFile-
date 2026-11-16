@@ -1,8 +1,8 @@
 /* NowFile setup: add your Supabase project URL and anon key below. */
 const SUPABASE_URL = 'YOUR_SUPABASE_URL';
 const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-const BUCKET_NAME = 'nowfile';
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const BUCKET_NAME = 'NowFile';
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 const $ = (id) => document.getElementById(id);
 const clientReady = SUPABASE_URL.startsWith('https://') && !SUPABASE_ANON_KEY.startsWith('YOUR_');
