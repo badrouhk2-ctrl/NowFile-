@@ -1,20 +1,12 @@
 
-/* =====================================
-   NOWFILE - APP.JS
-   Supabase File Upload & Sharing
-===================================== */
+const SUPABASE_URL = 'https://jxwihbvjzuqayaedaslc.supabase.co';
 
-// SUPABASE CONFIGURATION
-const SUPABASE_URL =
-  'https://jxwihbvjzuqayaedaslc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_h3dlLZDrQI6Etq0JcOUc9A_vzgis0LZ';
 
-const SUPABASE_ANON_KEY =
-  'sb_publishable_h3dlLZDrQI6Etq0JcOUc9A_vzgis0LZ';
-
-// IMPORTANT: Bucket name must match Supabase exactly.
 const BUCKET_NAME = 'nowfile';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
 
 // INITIALIZATION
 const $ = (id) => document.getElementById(id);
