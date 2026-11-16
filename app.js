@@ -1,58 +1,47 @@
-/* ==========================================
-   NOWFILE - FILE UPLOAD SYSTEM
-   Supabase Storage Configuration
-========================================== */
 
+/* =====================================
+   NOWFILE - APP.JS
+   Supabase File Upload & Sharing
+===================================== */
+
+// SUPABASE CONFIGURATION
 const SUPABASE_URL =
   'https://jxwihbvjzuqayaedaslc.supabase.co';
 
 const SUPABASE_ANON_KEY =
   'sb_publishable_h3dlLZDrQI6Etq0JcOUc9A_vzgis0LZ';
 
-const BUCKET_NAME = 'NowFile';
+// IMPORTANT: Bucket name must match Supabase exactly.
+const BUCKET_NAME = 'nowfile';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-// ==========================================
-// SUPABASE INITIALIZATION
-// ==========================================
-
+// INITIALIZATION
 const $ = (id) => document.getElementById(id);
 
-const supabase = window.supabase
-  ? window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    )
-  : null;
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 let selectedFile = null;
 let isUploading = false;
 
-// ==========================================
 // NOTIFICATIONS
-// ==========================================
-
 function toast(message) {
   const element = $('toast');
-
-  if (!element) {
-    alert(message);
-    return;
-  }
 
   element.textContent = message;
   element.classList.add('show');
 
-  setTimeout(() => {
+  clearTimeout(window.nowFileToastTimer);
+
+  window.nowFileToastTimer = setTimeout(() => {
     element.classList.remove('show');
   }, 3000);
 }
 
-// ==========================================
-// FILE SIZE FORMAT
-// ==========================================
-
+// FILE SIZE
 function formatSize(bytes) {
   if (bytes < 1024 * 1024) {
     return (bytes / 1024).toFixed(1) + ' KB';
@@ -61,10 +50,7 @@ function formatSize(bytes) {
   return (bytes / 1024 / 1024).toFixed(2) + ' MB';
 }
 
-// ==========================================
-// FILE SELECTION
-// ==========================================
-
+// SELECT FILE
 function choose(file) {
   if (!file) return;
 
@@ -87,10 +73,7 @@ function choose(file) {
   $('progressBar').style.width = '0%';
 }
 
-// ==========================================
-// REMOVE SELECTED FILE
-// ==========================================
-
+// REMOVE FILE
 function removeFile() {
   selectedFile = null;
 
@@ -101,109 +84,97 @@ function removeFile() {
   $('progressWrap').hidden = true;
 }
 
-// ==========================================
-// UPLOAD FILE TO SUPABASE
-// ==========================================
-
+// UPLOAD FILE
 async function uploadFile() {
   if (!selectedFile || isUploading) return;
 
-  if (!supabase) {
-    toast('Supabase connection is unavailable.');
-    return;
-  }
-
   isUploading = true;
 
-  const btn = $('uploadBtn');
+  const button = $('uploadBtn');
 
-  btn.disabled = true;
+  button.disabled = true;
   $('progressWrap').hidden = false;
-  $('statusText').textContent = 'Uploading your file...';
-  $('progressBar').style.width = '30%';
+  $('result').hidden = true;
+  $('statusText').textContent = 'Uploading...';
+  $('progressBar').style.width = '20%';
 
   try {
-    // Create a unique file name
-    const originalName = selectedFile.name;
+    const file = selectedFile;
 
-    const safeName = originalName
+    const safeName = file.name
       .normalize('NFKD')
-      .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .replace(/_+/g, '_');
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
 
-    const uniqueId =
-      typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : Date.now() + '-' + Math.random().toString(36).slice(2);
+    const uniqueId = crypto.randomUUID();
 
     const filePath =
       Date.now() + '-' + uniqueId + '-' + safeName;
 
-    // Upload to Supabase Storage
+    $('progressBar').style.width = '45%';
+
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
-      .upload(filePath, selectedFile, {
+      .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
         contentType:
-          selectedFile.type || 'application/octet-stream'
+          file.type || 'application/octet-stream'
       });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
-    // Generate public download URL
+    $('progressBar').style.width = '85%';
+
     const { data: publicData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(data.path);
 
-    if (!publicData || !publicData.publicUrl) {
-      throw new Error('Could not generate the file link.');
+    if (!publicData.publicUrl) {
+      throw new Error('Could not create download link.');
     }
-
-    // Display successful upload
-    $('progressBar').style.width = '100%';
-    $('statusText').textContent = 'Upload complete!';
 
     $('shareUrl').value = publicData.publicUrl;
     $('downloadLink').href = publicData.publicUrl;
+
+    $('progressBar').style.width = '100%';
+    $('statusText').textContent = 'Upload complete!';
+
     $('result').hidden = false;
 
-    toast('Your file was uploaded successfully!');
+    toast('File uploaded successfully!');
+
+    selectedFile = null;
+    $('fileInput').value = '';
+    $('fileRow').hidden = true;
 
   } catch (error) {
-    console.error('NowFile upload error:', error);
+    console.error('NowFile error:', error);
 
     $('statusText').textContent = 'Upload failed';
-    $('progressBar').style.width = '0%';
 
     if (
       error.message &&
-      (
-        error.message.toLowerCase().includes('row-level security') ||
-        error.message.toLowerCase().includes('policy')
-      )
+      error.message.toLowerCase().includes('policy')
     ) {
-      toast('Upload permission is not configured yet.');
+      toast('Upload permission error. Check Storage Policies.');
     } else {
-      toast(error.message || 'Upload failed. Please try again.');
+      toast(error.message || 'Upload failed. Try again.');
     }
 
   } finally {
     isUploading = false;
-    btn.disabled = !selectedFile;
+    button.disabled = !selectedFile;
   }
 }
 
-// ==========================================
 // COPY SHARE LINK
-// ==========================================
-
 async function copyLink() {
   const link = $('shareUrl').value;
 
-  if (!link) return;
+  if (!link) {
+    toast('No download link available.');
+    return;
+  }
 
   try {
     await navigator.clipboard.writeText(link);
@@ -215,29 +186,26 @@ async function copyLink() {
   }
 }
 
-// ==========================================
-// DRAG & DROP
-// ==========================================
-
+// DRAG AND DROP
 function setupDragAndDrop() {
   const dropArea = $('dropArea');
 
-  ['dragenter', 'dragover'].forEach((eventName) => {
-    dropArea.addEventListener(eventName, (event) => {
-      event.preventDefault();
+  ['dragenter', 'dragover'].forEach((event) => {
+    dropArea.addEventListener(event, (e) => {
+      e.preventDefault();
       dropArea.classList.add('dragging');
     });
   });
 
-  ['dragleave', 'drop'].forEach((eventName) => {
-    dropArea.addEventListener(eventName, (event) => {
-      event.preventDefault();
+  ['dragleave', 'drop'].forEach((event) => {
+    dropArea.addEventListener(event, (e) => {
+      e.preventDefault();
       dropArea.classList.remove('dragging');
     });
   });
 
-  dropArea.addEventListener('drop', (event) => {
-    const files = event.dataTransfer.files;
+  dropArea.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
 
     if (files.length > 1) {
       toast('Please select one file at a time.');
@@ -248,10 +216,7 @@ function setupDragAndDrop() {
   });
 }
 
-// ==========================================
-// INITIALIZE NOWFILE
-// ==========================================
-
+// START NOWFILE
 document.addEventListener('DOMContentLoaded', () => {
 
   $('year').textContent = new Date().getFullYear();
@@ -260,8 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('fileInput').click();
   });
 
-  $('fileInput').addEventListener('change', (event) => {
-    choose(event.target.files[0]);
+  $('fileInput').addEventListener('change', (e) => {
+    choose(e.target.files[0]);
   });
 
   $('removeBtn').addEventListener('click', removeFile);
@@ -272,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupDragAndDrop();
 
-  console.log('NowFile initialized successfully.');
+  console.log('NowFile is ready!');
 
 });
-    
+   
